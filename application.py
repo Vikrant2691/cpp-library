@@ -137,7 +137,7 @@ def consume_message_short(queue_name):
         print("----------------------------------Hi")
         # Create a session and use it to make our client
         session = boto3.session.Session()
-        sqs_client = session.client('sqs')
+        sqs_client = session.client('sqs', region_name='us-east-1')
             
             
             
