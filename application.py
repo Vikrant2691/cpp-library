@@ -10,7 +10,7 @@ from datetime import datetime
 application = app = __name__
 DATABASE_URI = 'postgresql+psycopg2://postgres:12345678@database-1.cuxbcbbcz4bk.us-east-1.rds.amazonaws.com/postgres'
 
-engine = create_engine(DATABASE_URI)#.raw_connection()
+engine = create_engine(DATABASE_URI)
 
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
