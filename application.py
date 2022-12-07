@@ -182,5 +182,5 @@ def consume_message_short(queue_name):
         
 
 if __name__ == '__main__':
-    consume_message_short("book-orders-q")
+    consume_message("book-orders-q")
     
