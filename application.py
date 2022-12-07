@@ -6,6 +6,12 @@ from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+import logging
+import boto3
+from botocore.exceptions import ClientError
+import time
+import json
+
 
 application = app = __name__
 DATABASE_URI = 'postgresql+psycopg2://postgres:12345678@database-1.cuxbcbbcz4bk.us-east-1.rds.amazonaws.com/postgres'
@@ -74,7 +80,107 @@ def updateRecommendations(userId):
 
 def getApp():
     return app
+    
+
+def consume_message(queue_name):
+        
+    try:
+        # Create a session and use it to make our client
+        session = boto3.session.Session()
+        sqs_client = session.client('sqs')
+            
+            
+            
+        # retrive the URL of an existing Amazon SQS queue
+        response = sqs_client.get_queue_url(QueueName=queue_name)
+        queue_url = response['QueueUrl']
+            
+            
+        while True:
+            print('\n\t\t<=== requesting messages from the queue...\n')
+            # receive a message from the specified queue
+            response = sqs_client.receive_message(QueueUrl=queue_url,
+                    MaxNumberOfMessages=1, # a number between 1 and 10
+                                VisibilityTimeout=10, #default 30 seconds
+            )
+                
+            messages = response.get('Messages')
+            if messages != None:
+                
+                messages = response['Messages'] # a list with all the messages
+                
+                # in this example we only retrieved one message, so the list contains only one element
+                current_message = messages[0] # retrieve the message from the list
+                print("\n<=== The message I'm proccessing is:\n {}".format(current_message['Body']))
+                print(type(current_message['Body']))
+                result=json.loads(current_message['Body'])
+                userid=result['userid']
+                updateRecommendations(userid)
+                receipt_handle = current_message['ReceiptHandle']
+                response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+                print("\n<=== sqs_client deleted the message, and the response is {}".format(response))
+            else:
+                print('No message has been received, will go to sleep...')
+                time.sleep(10)
+                    
+                
+            
+    except ClientError as e:
+        logging.error(e)
+        return False
+        
+        
+def consume_message_short(queue_name):
+        
+    try:
+        
+        print("----------------------------------Hi")
+        # Create a session and use it to make our client
+        session = boto3.session.Session()
+        sqs_client = session.client('sqs')
+            
+            
+            
+        # retrive the URL of an existing Amazon SQS queue
+        response = sqs_client.get_queue_url(QueueName=queue_name)
+        queue_url = response['QueueUrl']
+            
+            
+        print('\n\t\t<=== requesting messages from the queue...\n')
+        # receive a message from the specified queue
+        response = sqs_client.receive_message(QueueUrl=queue_url,
+            MaxNumberOfMessages=1, # a number between 1 and 10
+            VisibilityTimeout=10, #default 30 seconds
+        )
+                
+        messages = response.get('Messages')
+        if messages != None:
+                
+            messages = response['Messages'] # a list with all the messages
+                
+            # in this example we only retrieved one message, so the list contains only one element
+            current_message = messages[0] # retrieve the message from the list
+            print("\n<=== The message I'm proccessing is:\n {}".format(current_message['Body']))
+            print(type(current_message['Body']))
+            result=json.loads(current_message['Body'])
+            userid=result['userid']
+            updateRecommendations(userid)
+            receipt_handle = current_message['ReceiptHandle']
+            response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+            print("\n<=== sqs_client deleted the message, and the response is {}".format(response))
+        else:
+            print('No message has been received, will go to sleep...')
+                    
+                
+            
+    except ClientError as e:
+        logging.error(e)
+        return False
+    
+    return True
+        
+        
 
 if __name__ == '__main__':
-
-    updateRecommendations(6)
+    consume_message_short("book-orders-q")
+    
