@@ -1,0 +1,10 @@
+[Unit]
+Description=cpp-library
+After=network.target
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/cpp-library
+ExecStart=python /home/ubuntu/cpp-library/application.py
+[Install]
+WantedBy=multi-user.target
