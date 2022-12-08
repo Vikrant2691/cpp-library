@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from library import recommendations
+# from library import recommendations
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
@@ -11,6 +11,7 @@ import boto3
 from botocore.exceptions import ClientError
 import time
 import json
+from cpp_library_package.library import recommendations
 
 
 application = app = __name__

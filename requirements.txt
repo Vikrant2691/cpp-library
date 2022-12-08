@@ -1,5 +1,6 @@
 boto3==1.26.21
 botocore==1.29.24
+cpp_library_package==0.0.1
 greenlet==2.0.1
 importlib-metadata==5.1.0
 jmespath==1.0.1
